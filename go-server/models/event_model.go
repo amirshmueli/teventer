@@ -7,7 +7,7 @@ type Event struct {
 	OperatorRefer string `json:"-"`
 
 	Capacity uint32
-	Current  uint32 `json:"-"`
+	Current  uint32
 
 	StartTime string
 	EndTime   string

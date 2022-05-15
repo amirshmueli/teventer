@@ -29,7 +29,7 @@ func SCreateEvent(w http.ResponseWriter, r *http.Request) {
 	if _username == "" {
 		return
 	}
-	if _username != mux.Vars(r)["username"] {
+	if _username != mux.Vars(r)["opname"] {
 		w.WriteHeader(http.StatusConflict)
 		return
 	}
@@ -125,6 +125,7 @@ func SGetEventList(w http.ResponseWriter, r *http.Request) {
 
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Println(err)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -191,4 +192,71 @@ func SGetEventStats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//fmt.Printf("\t Sent Stats For %s %s \n", eventChosen.Title, eventChosen.StartTime)
+}
+
+func SGetEvnetListUser(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint: Get Events")
+
+	vars := r.URL.Query()
+	var tokenString = vars.Get("token")
+
+	_username := controllers.Authenticate(w, tokenString)
+
+	if _username == "" {
+		return
+	}
+	if _username != mux.Vars(r)["username"] {
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+	// auth compeleted
+
+	db, err := database.OpenDaDatabase()
+	if err != nil {
+		w.WriteHeader(http.StatusLocked)
+		return
+	}
+	defer db.Close()
+
+	// searching events
+
+	fmt.Printf("\t Searching Events For %s \n", _username)
+
+	var connection []models.Connection
+
+	if err := db.Where("user_refer=?", _username).Find(&connection).Error; err != nil {
+		if err == mux.ErrNotFound {
+			w.WriteHeader(http.StatusNoContent)
+			fmt.Println("\t No Data Found")
+			return
+		}
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("\t Connection List: Established")
+	var eventList []models.Event
+	fmt.Println("\t Searching Events Within Connections")
+
+	for _, v := range connection {
+		fmt.Println(v.UserRefer)
+		if v.UserRefer == _username {
+			var e models.Event
+
+			if err := db.Where("ID=?", v.EventRefer).First(&e).Error; err != nil {
+				fmt.Println("Error At Searching Event")
+				fmt.Println(e)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			eventList = append(eventList, e)
+		}
+	}
+	fmt.Printf("\t Found Events %d\n", len(eventList))
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"events": eventList,
+	})
 }

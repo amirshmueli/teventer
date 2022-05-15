@@ -92,7 +92,7 @@ const PageLogin = ({ navigation }) => {
           <Text
             style={[
               styles.wrong_creds_text,
-              { fontSize: 16, fontWeight: "bold", fontFamily: "Helvetica" },
+              { fontSize: 16, fontWeight: "bold" },
             ]}
           >
             {timedOut ? "Connection Error" : "Wrong Password"}

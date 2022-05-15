@@ -1,11 +1,13 @@
-const ROOT = "https://a9d7-217-138-192-101.eu.ngrok.io/";
+const ROOT = "https://2447-79-183-11-147.eu.ngrok.io/";
 const API = ROOT + "api/";
 //const TICKET_CHECKIN = `${ROOT}/tickets/check-in/`;
 import * as ActionTypes from "./store/actionTypes";
 
 async function r_get_data(URL) {
   const timeout = 5000;
-  console.log(`>>> ${URL[0]} ${URL[1]} ${URL[2] ? URL[2] : ""}`);
+  console.log(
+    `>>> ${URL[0]} ${URL[1]} ${URL[2] ? JSON.stringify(URL[2]) : ""}`
+  );
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   const response = await fetch(URL[1], {
@@ -20,8 +22,9 @@ async function r_get_data(URL) {
 async function get_data(URL) {
   try {
     const req = await r_get_data(URL);
+    console.log("\t >>> Got Answer");
     const json = await req.json();
-    //console.log(json);
+    console.log(json);
 
     if (json["error"]) return [null, "Token Error"];
     return [json, null];
@@ -44,7 +47,10 @@ function build_query(URL, query) {
 // gets username and password
 // returns an error or a token
 export async function get_token(userID, password) {
-  const url = ["GET", `${ROOT}login?username=${userID}&password=${password}`];
+  const url = [
+    "GET",
+    `${ROOT}/gen/login?username=${userID}&password=${password}`,
+  ];
   console.log(`\n>>> Requesting Token For 🔑 ${userID} | ${password}`);
   return await get_data(url);
 }
@@ -104,17 +110,22 @@ export async function get_gstlst(
 ) {
   let url = [
     "GET",
-    `${API}tickets/${userID}?token=${token}&eventID=${eventID}&offset=${offset}&limit=${range}&status=${state}`,
+    `${API}tickets/${userID}?token=${token}&eventID=${eventID}&offset=${offset}&limit=${range}&status=${state}&search=`,
   ];
-  search != "" ? (url += `&search=${search}`) : null;
+  if (search != "") {
+    url[1] += `${search}`;
+  }
   console.log(`>>> Requesting Events For 🕴️ ${userID}`);
   return await get_data(url);
 }
 
 export async function scan_ticket(userID, token, eventID, ticketID) {
+  if (eventID === undefined) {
+    return [null, "URL error"];
+  }
   const url = [
     "POST",
-    `${API}check-in/${userID}?token=${token}`,
+    `${ROOT}live/check-in/${userID}?token=${token}`,
     {
       eventID: eventID,
       ticketID: ticketID,
@@ -124,28 +135,27 @@ export async function scan_ticket(userID, token, eventID, ticketID) {
   return get_data(url);
 }
 
+export async function make_scan(userID, token, data_url) {
+  console.log("here");
+  let regex = "ticket/(.*)/(.*)";
+  let reg = data_url.match(regex);
+  console.log(`[${reg}]`);
+  if (reg === null) {
+    return await scan_ticket(userID, token);
+  }
+  return await scan_ticket(userID, token, reg[0], reg[1]);
+}
+
 export async function get_params(userID, token) {
   const url = `${ROOT}params?userId=${userID}&token=${token}`;
   console.log(`>>> Requesting params 📉`);
   return get_data(url);
 }
 
-export function parseUrl(urlStr) {
-  //https://www.wixevents.com/check-in/G2OH-CH59-MY021,a499860c-fb2e-4662-96f3-ba02d24364a2
-  console.log(urlStr);
-  if (0 > String(urlStr).indexOf(TICKET_CHECKIN)) {
-    return { status: "error", message: "wrong ticket" };
-  }
-  let prms = urlStr.replace(TICKET_CHECKIN, "").split(",");
-  let ticket = prms[0];
-  let eventId = prms[1];
-  return { status: "valid", url: [ticket, eventId] };
-}
-
 export async function remove_ticket(userID, token, eventID, ticketID) {
   const url = [
     "POST",
-    `${API}check-out/${userID}?token=${token}`,
+    `${ROOT}live/check-out/${userID}?token=${token}`,
     {
       eventID: eventID,
       ticketID: ticketID,

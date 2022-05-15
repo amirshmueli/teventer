@@ -157,7 +157,7 @@ const GuestTab = ({ item, state, setNumber }) => {
         <Text style={styles.big_text}>
           {item.Name} {item.LastName}
         </Text>
-        <Text style={styles.small_text}>{item.Email}</Text>
+        <Text style={styles.small_text}>{item.Type}</Text>
       </View>
       <TouchableOpacity
         style={styles.arrive_button}

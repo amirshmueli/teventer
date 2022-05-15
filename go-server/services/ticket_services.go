@@ -3,12 +3,15 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"image/png"
 	"net/http"
 	"server/controllers"
 	"server/database"
 	"server/models"
 	"strconv"
 
+	"github.com/boombuler/barcode"
+	"github.com/boombuler/barcode/qr"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
@@ -28,7 +31,7 @@ func SCreateTicket(w http.ResponseWriter, r *http.Request) {
 	if _username == "" {
 		return
 	}
-	if _username != mux.Vars(r)["username"] {
+	if _username != mux.Vars(r)["opname"] {
 		w.WriteHeader(http.StatusConflict)
 		return
 	}
@@ -58,9 +61,11 @@ func SCreateTicket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(regTicket)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": 200,
+		"ticket": regTicket,
+	})
 	fmt.Println("\t Ticket Created Successfully")
-
 }
 
 func STicketList(w http.ResponseWriter, r *http.Request) {
@@ -100,11 +105,8 @@ func STicketList(w http.ResponseWriter, r *http.Request) {
 	}
 	var tickets = []models.Ticket{}
 	var search = "%" + query.Get("search") + "%"
-	var op bool = false
-	if query.Get("status") == "1" {
-		op = true
-	}
-	paginDB := ticketPagination(&tickets, db, eventID, offset, limit, op, search)
+
+	paginDB := ticketPagination(&tickets, db, eventID, offset, limit, query.Get("status"), search)
 	err = paginDB.Error
 	if err != nil {
 		fmt.Println("\n PAGINATION: database search error")
@@ -121,6 +123,36 @@ func STicketList(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("\n Ticket List Was Sent \n ")
 }
 
-func ticketPagination(tickets *[]models.Ticket, db *gorm.DB, eventID string, offset int, limit int, status bool, search string) *gorm.DB {
+func ticketPagination(tickets *[]models.Ticket, db *gorm.DB, eventID string, offset int, limit int, status string, search string) *gorm.DB {
+	if status == "2" {
+		return db.Where("event_refer=? AND name LIKE ?", eventID, search).Limit(limit).Offset(offset).Find(&tickets)
+	}
 	return db.Where("event_refer=? AND name LIKE ? AND status IS ?", eventID, search, status).Limit(limit).Offset(offset).Find(&tickets)
+}
+
+func SGenerateQR(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("ENDPOINT: QR generation")
+
+	vars := r.URL.Query()
+	var tokenString = vars.Get("token")
+	_username := controllers.Authenticate(w, tokenString)
+
+	if _username == "" {
+		return
+	}
+
+	if _username != mux.Vars(r)["username"] {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	eventID := vars.Get("eventID")
+	ticketID := vars.Get("ticketID")
+
+	var qr_url = fmt.Sprintf("www.teventer.com/ticket/%s/%s", eventID, ticketID)
+
+	qrCode, _ := qr.Encode(qr_url, qr.L, qr.Auto)
+	qrCode, _ = barcode.Scale(qrCode, 512, 512)
+
+	png.Encode(w, qrCode)
 }

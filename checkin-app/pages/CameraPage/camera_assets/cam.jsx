@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Text, View, StyleSheet, Button, TouchableOpacity } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
-import TimeModal from "./timeModal";
 import PopUp from "./modal";
-import { scan_ticket, getStats } from "../../../Server";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import { getStats } from "../../../Server";
 import { useSelector, useDispatch } from "react-redux";
-import * as ActionTypes from "../../../store/actionTypes";
 import { useFocusEffect } from "@react-navigation/native";
-import NoEvent from "../../NoEvent";
 
 const TabCamera = () => {
   const MSG_waiting = "Searching For QR...";
@@ -29,7 +25,7 @@ const TabCamera = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      getStats({ user, event }, dispatch, token);
+      //getStats({ user, event }, dispatch, token);
       setOpenCamera(true);
       return () => setOpenCamera(false);
     }, [])
@@ -47,6 +43,7 @@ const TabCamera = () => {
   }, []);
 
   useEffect(() => {
+    console.log(text);
     setScanned(modalVisible);
     if (!modalVisible) {
       setText("MSG_waiting");
@@ -56,12 +53,13 @@ const TabCamera = () => {
   // What happens when we scan the bar code
   const handleBarCodeScanned = ({ type, data }) => {
     if (onScan) return;
+
+    setText(data);
+    setOnScan(true);
     if (text == "MSG_waiting") {
       setOnScan(false);
       return;
     }
-    setOnScan(true);
-    setText(data);
     setModalVisible(true);
   };
 
