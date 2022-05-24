@@ -1,4 +1,4 @@
-const ROOT = "https://2447-79-183-11-147.eu.ngrok.io/";
+const ROOT = "https://473f-79-183-11-147.eu.ngrok.io/";
 const API = ROOT + "api/";
 //const TICKET_CHECKIN = `${ROOT}/tickets/check-in/`;
 import * as ActionTypes from "./store/actionTypes";
@@ -49,7 +49,7 @@ function build_query(URL, query) {
 export async function get_token(userID, password) {
   const url = [
     "GET",
-    `${ROOT}/gen/login?username=${userID}&password=${password}`,
+    `${ROOT}gen/login?username=${userID}&password=${password}`,
   ];
   console.log(`\n>>> Requesting Token For 🔑 ${userID} | ${password}`);
   return await get_data(url);
@@ -136,14 +136,17 @@ export async function scan_ticket(userID, token, eventID, ticketID) {
 }
 
 export async function make_scan(userID, token, data_url) {
-  console.log("here");
-  let regex = "ticket/(.*)/(.*)";
-  let reg = data_url.match(regex);
-  console.log(`[${reg}]`);
-  if (reg === null) {
-    return await scan_ticket(userID, token);
+  try {
+    console.log(`GOT URL TO SCAN: ${data_url}`);
+    let reg = String(data_url).split("ticket")[1].split("/");
+    if (reg === null) {
+      console.log("NOT FOUND");
+      return await scan_ticket(userID, token);
+    }
+    return await scan_ticket(userID, token, reg[1], reg[2]);
+  } catch {
+    return [null, "URL error"];
   }
-  return await scan_ticket(userID, token, reg[0], reg[1]);
 }
 
 export async function get_params(userID, token) {

@@ -207,6 +207,65 @@ func SAssignEvent(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// gets vars in url username and eventID
+func SRemoveConnection(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint: Remove Event")
+
+	vars := r.URL.Query()
+	var tokenString = vars.Get("token")
+
+	_username := controllers.Authenticate(w, tokenString) //! watch for same op and user name
+
+	if _username == "" {
+		return
+	}
+
+	if _username != mux.Vars(r)["username"] {
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+	// auth compeleted
+
+	db, err := database.OpenDaDatabase()
+	if err != nil {
+		w.WriteHeader(http.StatusLocked)
+		return
+	}
+	defer db.Close()
+
+	var removedEventID = vars.Get("eventID")
+	var usernameRem = vars.Get("username")
+
+	// connection to remove
+	var C2Rem = models.Connection{
+		EventRefer: removedEventID,
+		UserRefer:  usernameRem,
+	}
+	fmt.Println(C2Rem.EventRefer)
+	fmt.Println(C2Rem.UserRefer)
+
+	var deletion = db.Where("event_refer=? AND user_refer=?", C2Rem.EventRefer, C2Rem.UserRefer).Delete(&models.Connection{})
+	if err = deletion.Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			w.WriteHeader(http.StatusNoContent)
+			fmt.Println("\t ERROR: user and event not connected")
+			return
+		}
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println("\t ERROR: error deleting")
+		fmt.Println(err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Println("\t Successfully deleted connection")
+	json.NewEncoder(w).Encode(map[string]string{
+		"username": C2Rem.UserRefer,
+		"eventID":  C2Rem.EventRefer,
+	})
+}
+
 func localAssign(w http.ResponseWriter, UserRefer string, EventRefer string) int {
 
 	db, err := database.OpenDaDatabase()

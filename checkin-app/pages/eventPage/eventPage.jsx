@@ -36,6 +36,7 @@ const PageEvent = ({ navigation, route }) => {
       console.log("\nevents time: ", time);
       setIsLoading(true);
       let [data, error] = await get_events(username, token);
+      setIsLoading(false);
       if (!handleEvents(data, error)) {
         time++;
         continue;
@@ -43,7 +44,6 @@ const PageEvent = ({ navigation, route }) => {
       console.log("### got events 🥳");
       break;
     }
-    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -68,6 +68,10 @@ const PageEvent = ({ navigation, route }) => {
     if (error) {
       console.log(error);
       return false;
+    }
+    if (data.events === null) {
+      setEvents([]);
+      return;
     }
     setEvents(
       data.events.sort((x, y) => new Date(x.StartTime) - new Date(y.StartTime))
@@ -197,7 +201,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   refresh_text: {
-    color: "white",
+    color: "#1e88e5",
     fontFamily: "brandon",
     fontSize: 18,
   },

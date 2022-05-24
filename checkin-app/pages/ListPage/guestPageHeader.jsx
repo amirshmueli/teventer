@@ -46,7 +46,7 @@ const GuestPageHeader = ({
           </Text>
         </View>
         <View style={styles.mid_container}>
-          <Text
+          {/* <Text
             style={[
               {
                 fontSize: max === "" || current === "" ? 18 : 24,
@@ -59,7 +59,7 @@ const GuestPageHeader = ({
             {max === "" || current === ""
               ? "Loading stats..."
               : current + " | " + max}
-          </Text>
+          </Text> */}
           <Switch
             style={styles.switch}
             ios_backgroundColor="#05b"

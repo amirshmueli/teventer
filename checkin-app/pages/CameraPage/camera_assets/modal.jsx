@@ -57,25 +57,33 @@ const PopUp = ({ visible, setVisible, setScan, urlData, Tinterval }) => {
   );
 
   const handleUrl = async () => {
+    if (!visible) return;
+
     setIsLoading(true);
     setIcon(LoadingIndicator);
-    let [data, error] = await make_scan(user.username, token, urlData);
 
+    let [data, error] = await make_scan(user.username, token, urlData);
     setIsLoading(false);
+
     if (!handleResult(data, error)) return;
+
     console.log("ticket scanned");
   };
 
   const handleResult = (data, error) => {
-    if (error === "URL error")
+    console.log(`[${data}][${error}]`);
+    if (error === "URL error") {
       data = {
-        result: { status: 500 },
+        status: 500,
       };
-    else if (error) {
+    } else if (error) {
+      setIcon(connectionMark);
       console.log(error);
       return false;
     }
+
     const status = data.status;
+    console.log(`i am status [${status}]`);
     if (status == 300) {
       setIcon(alertMark);
       setTicketData({
@@ -90,16 +98,14 @@ const PopUp = ({ visible, setVisible, setScan, urlData, Tinterval }) => {
       });
       setTicketData({
         message: "Guest Arrived!",
-        owner: resp.message,
-        type: resp.ticket.Type,
+        owner: data.ticket.Name + " " + data.ticket.LastName,
+        type: data.ticket.Type,
       });
 
-      console.log(Tinterval);
-      if (Tinterval == 0) {
-        return;
-      }
-
-      setTimeout(() => setVisible(false), Tinterval * 1000);
+      setTimeout(() => {
+        setVisible(false);
+        setScan(false);
+      }, Tinterval * 1000);
     } else if (status == 500) {
       setIcon(XMark);
       setTicketData({
@@ -198,7 +204,7 @@ const styles = StyleSheet.create({
     padding: 15,
     paddingVertical: 20,
     elevation: 2,
-    backgroundColor: "#806739",
+    backgroundColor: "#1e88e5",
   },
   textStyle: {
     color: "white",

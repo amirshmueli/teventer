@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"image/png"
 	"net/http"
@@ -149,10 +150,62 @@ func SGenerateQR(w http.ResponseWriter, r *http.Request) {
 	eventID := vars.Get("eventID")
 	ticketID := vars.Get("ticketID")
 
+	db, err := database.OpenDaDatabase()
+	if err != nil {
+		w.WriteHeader(http.StatusLocked)
+		return
+	}
+	defer db.Close()
+
+	if err := db.Where(db.Where("ticket_id=? AND event_refer=?", ticketID, eventID)).First(&models.Ticket{}).Error; err != nil || errors.Is(err, gorm.ErrRecordNotFound) {
+		fmt.Println("\t Error Could Not Find Ticket")
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
 	var qr_url = fmt.Sprintf("www.teventer.com/ticket/%s/%s", eventID, ticketID)
 
 	qrCode, _ := qr.Encode(qr_url, qr.L, qr.Auto)
 	qrCode, _ = barcode.Scale(qrCode, 512, 512)
 
 	png.Encode(w, qrCode)
+}
+
+func SDeleteTicket(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("ENDPOINT: QR generation")
+	w.Header().Set("Content-Type", "application/json")
+	vars := r.URL.Query()
+	var tokenString = vars.Get("token")
+	_username := controllers.Authenticate(w, tokenString)
+
+	if _username == "" {
+		return
+	}
+
+	if _username != mux.Vars(r)["username"] {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	eventID := vars.Get("eventID")
+	ticketID := vars.Get("ticketID")
+
+	db, err := database.OpenDaDatabase()
+	if err != nil {
+		w.WriteHeader(http.StatusLocked)
+		return
+	}
+	defer db.Close()
+
+	if err := db.Where("event_refer=? AND ticket_id=?", eventID, ticketID).Delete(&models.Ticket{}).Error; err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println("error at deleting ticket")
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{
+		"ticketID": ticketID,
+		"eventID":  eventID,
+	})
+
 }

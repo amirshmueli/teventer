@@ -4,8 +4,8 @@ import * as ActionTypes from "./actionTypes";
 const initial_state = {
   token: "",
   user: {
-    username: "amirshmueli",
-    password: "1234",
+    username: "",
+    password: "",
   },
   tickets: {
     current: "",

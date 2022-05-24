@@ -44,22 +44,22 @@ const TabCamera = () => {
 
   useEffect(() => {
     console.log(text);
-    setScanned(modalVisible);
-    if (!modalVisible) {
-      setText("MSG_waiting");
+    if (modalVisible === false) {
+      setText(MSG_waiting);
     }
   }, [modalVisible]);
 
   // What happens when we scan the bar code
   const handleBarCodeScanned = ({ type, data }) => {
     if (onScan) return;
-
-    setText(data);
-    setOnScan(true);
-    if (text == "MSG_waiting") {
-      setOnScan(false);
+    console.log(`scanned [${data}]`);
+    if (data === MSG_waiting) {
       return;
     }
+    console.log(`in`);
+    setText(data);
+
+    setOnScan(true);
     setModalVisible(true);
   };
 
@@ -99,11 +99,11 @@ const TabCamera = () => {
           <Text style={[styles.Header_Text, { fontSize: 24 }]}>
             {event.Title}
           </Text>
-          <Text style={styles.Header_Text}>
+          {/* <Text style={styles.Header_Text}>
             {tickets.current === "" || tickets.capacity === ""
               ? "Loading Stats"
               : tickets.current + " | " + tickets.capacity}
-          </Text>
+          </Text> */}
         </View>
       </View>
     );

@@ -79,10 +79,78 @@ func SCreateEvent(w http.ResponseWriter, r *http.Request) {
 
 /* SDeleteEvent - DELETE
 GET: event-id
-RETURN: the created event
+RETURN: the deleted event
 */
 func SDeleteEvent(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint: Delete Event")
+
+	vars := r.URL.Query()
+	var tokenString = vars.Get("token")
+
+	_username := controllers.Authenticate(w, tokenString)
+
+	if _username == "" {
+		return
+	}
+	if _username != mux.Vars(r)["opname"] {
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+	// auth compeleted
+
+	db, err := database.OpenDaDatabase()
+	if err != nil {
+		w.WriteHeader(http.StatusLocked)
+		return
+	}
+	defer db.Close()
+
+	var eventID = vars.Get("eventID")
+
+	var event2deletet = models.Event{}
+
+	var events []models.Event
+
+	if err := db.Where("operator_refer=?", _username).Find(&events).Error; err != nil {
+		fmt.Println("\t Error at finding event")
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	var safe = false
+	for _, v := range events {
+		fmt.Println(v.ID)
+		if v.ID == eventID {
+			safe = true
+			break
+		}
+	}
+
+	if !safe {
+		fmt.Println("\t Deletion Not Safe")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := db.Where("ID=?", eventID).Delete(&event2deletet).Error; err != nil {
+		fmt.Println("\t Error at deleting event")
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	fmt.Println("\t Event Deleted")
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"ID": eventID,
+	})
+
+	if err := db.Where("event_refer=?", eventID).Delete(&models.Connection{}).Error; err != nil {
+		fmt.Println("\t Error at deleting connections")
+		fmt.Println(err)
+	}
+
 }
 
 /* SGetEventList - GET
@@ -114,7 +182,7 @@ func SGetEventList(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	// searching events
-	var eventList []models.Event
+	eventList := []models.Event{}
 	fmt.Printf("\t Searching Events For %s \n", _username)
 	if err := db.Where("operator_refer=?", _username).Find(&eventList).Error; err != nil {
 		if err == mux.ErrNotFound {
@@ -129,6 +197,13 @@ func SGetEventList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	fmt.Println(eventList)
+	if eventList == nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"events": []string{},
+		})
+		return
+	}
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"events": eventList,
 	})
