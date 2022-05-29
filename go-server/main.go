@@ -86,5 +86,4 @@ func handleRequests() {
 
 func main() {
 	handleRequests()
-	//services.RunSocket(":80")
 }
