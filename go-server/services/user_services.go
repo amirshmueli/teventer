@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"server/controllers"
 	"server/database"
@@ -106,7 +107,63 @@ func SCreateUser(w http.ResponseWriter, r *http.Request) {
 
 func SRemoveUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("ENDPOINT: Remove User")
-	fmt.Fprintf(w, "Removed User")
+
+	vars := r.URL.Query()
+	var tokenString = vars.Get("token")
+
+	_username := controllers.Authenticate(w, tokenString)
+
+	if _username == "" {
+		return
+	}
+
+	if _username != mux.Vars(r)["username"] {
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+	// auth compeleted
+
+	db, err := database.OpenDaDatabase()
+	if err != nil {
+		w.WriteHeader(http.StatusLocked)
+		return
+	}
+	defer db.Close()
+
+	var username2rem = vars.Get("username")
+
+	var tempUser = models.User{
+		Username:      username2rem,
+		OperatorRefer: _username,
+	}
+
+	if err := db.Where("username=? AND operator_refer=?", tempUser.Username, tempUser.OperatorRefer).First(&models.User{}).Error; err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println("\t ERROR: Could Not Find Username")
+		log.Output(1, err.Error())
+		return
+	}
+	fmt.Println("\t Username Verified.")
+	if err := db.Where("user_refer=?", tempUser.Username).Delete(&models.Connection{UserRefer: tempUser.Username}).Error; err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println("\t ERROR: Could Not Delete Related Events")
+		log.Output(1, err.Error())
+		return
+	}
+	fmt.Println("\t Connections Deleted")
+
+	if err := db.Where("username=?", tempUser.Username).Delete(&tempUser).Error; err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println("\t ERROR: Could Not Delete User")
+		log.Output(1, err.Error())
+		return
+	}
+
+	fmt.Println("\t User Deleted Succefully")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":   200,
+		"username": tempUser.Username,
+	})
 }
 
 func SLogin(w http.ResponseWriter, r *http.Request) {
@@ -209,7 +266,7 @@ func SAssignEvent(w http.ResponseWriter, r *http.Request) {
 
 // gets vars in url username and eventID
 func SRemoveConnection(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint: Remove Event")
+	fmt.Println("Endpoint: Remove Connnection")
 
 	vars := r.URL.Query()
 	var tokenString = vars.Get("token")
@@ -260,7 +317,8 @@ func SRemoveConnection(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	fmt.Println("\t Successfully deleted connection")
-	json.NewEncoder(w).Encode(map[string]string{
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":   200,
 		"username": C2Rem.UserRefer,
 		"eventID":  C2Rem.EventRefer,
 	})
@@ -298,7 +356,12 @@ func localAssign(w http.ResponseWriter, UserRefer string, EventRefer string) int
 	var temp models.Connection
 	if err := db.Where("user_refer=? AND event_refer=?", conn.UserRefer, conn.EventRefer).First(temp).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
 		fmt.Println("\t already connected")
-		return http.StatusAlreadyReported
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status":   200,
+			"username": user.Username,
+			"eventID":  event.ID,
+		})
+		return http.StatusOK
 	}
 
 	if err := db.Create(&conn).Error; err != nil {
@@ -306,12 +369,13 @@ func localAssign(w http.ResponseWriter, UserRefer string, EventRefer string) int
 		fmt.Println(err)
 		return http.StatusInternalServerError
 	}
-
+	fmt.Printf("\t Connected %s to %s", temp.UserRefer, temp.EventRefer)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status": 200,
+		"status":   200,
+		"username": user.Username,
+		"eventID":  event.ID,
 	})
-	w.WriteHeader(http.StatusCreated)
-	return 0
+	return 200
 }
 
 func SGetUserList(w http.ResponseWriter, r *http.Request) {
@@ -390,7 +454,7 @@ func SGetUserList(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"Max":   max,
-		"Users": &usersName,
+		"users": &usersName,
 	})
 }
 
@@ -400,7 +464,7 @@ func SGetAllUserList(w http.ResponseWriter, r *http.Request) {
 	vars := r.URL.Query()
 	var tokenString = vars.Get("token")
 
-	_username := controllers.Authenticate(w, tokenString) //! watch for same op and user name
+	_username := controllers.Authenticate(w, tokenString)
 
 	if _username == "" {
 		return
@@ -439,8 +503,13 @@ func SGetAllUserList(w http.ResponseWriter, r *http.Request) {
 	var max int
 	connection.Count(&max)
 
+	var users_name []string
+	for _, user := range users {
+		users_name = append(users_name, user.Username)
+	}
+
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"Max":   max,
-		"Users": users,
+		"users": users_name,
 	})
 }

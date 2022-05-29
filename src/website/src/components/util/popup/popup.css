@@ -1,0 +1,19 @@
+.popup-container {
+    position: fixed;
+    top:0;
+    left:0;
+    width: 500px;
+    height: 500px;
+    background-color:aquamarine;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.popup-inner {
+    position: relative;
+    padding: 32px;
+    width: 100%;
+    max-width: 640px;
+    background-color: #fff;
+}

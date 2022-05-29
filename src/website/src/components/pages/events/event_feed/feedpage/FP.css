@@ -1,0 +1,45 @@
+.feed-button {
+    width: 100px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    border: #2d3b55;
+    padding: 18px;
+    font-family: sans-serif;
+    cursor: pointer;
+    text-transform: uppercase;
+    background: #e8e9ec;
+    color: #777;
+    letter-spacing: 0.2px;
+    outline: 0;
+    transition: all 0.3s;
+}
+
+.feed-button:hover {
+    background-color: #bebebe;
+    color: white
+}
+
+#deleter:hover {
+    background-color: #b44848;
+}
+
+#switcher:hover {
+    background-color: #1e88e5;
+}
+
+.feed-buttons {
+    margin-top: 10px;
+    width: 20%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.feed-search-area {
+    width: 100%;
+    height: 80%;
+    background-color: #2d3b55;
+}

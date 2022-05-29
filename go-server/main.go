@@ -12,17 +12,19 @@ import (
 
 var DATABASE_PATH = "database/server_db.db"
 
+const STATIC_PATH = "./build/static"
+
 func homePage(w http.ResponseWriter, _ *http.Request) {
 	fmt.Println("Endpoint hit: Home Endpoint")
 	fmt.Fprintf(w, "Welcome To Home Page")
 }
 
 func handleRequests() {
-	var router = mux.NewRouter().StrictSlash(true)
+	var router = mux.NewRouter() //.StrictSlash(true)
 	controllers.InitialMigration()
 
 	// homepage
-	router.HandleFunc("/", homePage)
+	//router.HandleFunc("/", homePage)
 	router.HandleFunc("/home", homePage)
 	// operator handle
 	router.HandleFunc("/login", services.SLoginOperator)                     // achive token
@@ -33,8 +35,8 @@ func handleRequests() {
 	router.HandleFunc("/gen/register/{opname}", services.SCreateUser).Methods("POST")         // create a user
 	router.HandleFunc("/gen/assign/{username}", services.SAssignEvent).Methods("POST")        // assign an event to a user
 	router.HandleFunc("/gen/remove/{username}", services.SRemoveConnection).Methods("DELETE") // remove an event to a user
-	router.HandleFunc("/gen/users/{username}", services.SGetUserList).Methods("GET")
-
+	router.HandleFunc("/gen/users/{username}", services.SGetUserList).Methods("GET")          // get user list for given operator and event
+	router.HandleFunc("/gen/delete/{username}", services.SRemoveUser).Methods("DELETE")       // deletes user
 	// tickets handlers
 	router.HandleFunc("/gen/tickets/{opname}", services.SCreateTicket).Methods("POST")   // ticket creation
 	router.HandleFunc("/gen/tickets/{opname}", services.SDeleteTicket).Methods("DELETE") // ticket deletion
@@ -58,10 +60,25 @@ func handleRequests() {
 
 	router.HandleFunc("/gen/QR/{username}", services.SGenerateQR).Methods("GET")
 
+	//
+	// file server and rendering
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("ENDPOINT: FILE-HOME")
+		http.ServeFile(w, r, "./build")
+	})
+
+	router.HandleFunc("/static/{type}/{file}", func(w http.ResponseWriter, r *http.Request) {
+		var x = STATIC_PATH + "/" + mux.Vars(r)["type"] + "/" + mux.Vars(r)["file"]
+		fmt.Printf("ENDPOINT: FILE %s\n", x)
+		http.ServeFile(w, r, x)
+	})
+	//
+	//
+
 	log.Output(1, "server is up and running!")
 
-	// log.Fatal(http.ListenAndServe(":80", router))
-	err := http.ListenAndServeTLS(":443", "tls/server.crt", "tls/server.key", nil)
+	//log.Fatal(http.ListenAndServe(":80", router))
+	err := http.ListenAndServeTLS(":443", "tls/server.crt", "tls/server.key", router)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
@@ -69,4 +86,5 @@ func handleRequests() {
 
 func main() {
 	handleRequests()
+	//services.RunSocket(":80")
 }

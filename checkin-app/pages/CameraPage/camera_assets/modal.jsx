@@ -62,7 +62,12 @@ const PopUp = ({ visible, setVisible, setScan, urlData, Tinterval }) => {
     setIsLoading(true);
     setIcon(LoadingIndicator);
 
-    let [data, error] = await make_scan(user.username, token, urlData);
+    let [data, error] = await make_scan(
+      user.username,
+      token,
+      urlData,
+      event.ID
+    );
     setIsLoading(false);
 
     if (!handleResult(data, error)) return;

@@ -21,8 +21,8 @@ const PageLogin = ({ navigation }) => {
   const { user, token } = useSelector((state) => state);
   const [isLogged, setIsLogged] = useState(token != "");
   const [isLoading, setIsLoading] = useState(false);
-  const [username, setUsername] = useState(user.username);
-  const [password, setPassword] = useState(user.password);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [sent, setSent] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
 
@@ -118,7 +118,12 @@ const PageLogin = ({ navigation }) => {
     <KeyboardAvoidingView>
       <View style={styles.base_container}>
         <View style={styles.top_design}>
-          <View style={styles.header_container}></View>
+          <View style={styles.header_container}>
+            <Image
+              source={require("../../assets/logo.png")}
+              style={{ width: 300, height: 75 }}
+            />
+          </View>
         </View>
         <View style={styles.bottom_container}>
           <View style={styles.placement} />
@@ -188,6 +193,10 @@ const styles = StyleSheet.create({
   },
   placement: {
     height: "15%",
+  },
+  title_des: {
+    fontSize: 48,
+    color: "white",
   },
   bottom_container: {
     alignItems: "center",

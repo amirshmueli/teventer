@@ -109,29 +109,13 @@ func SDeleteEvent(w http.ResponseWriter, r *http.Request) {
 
 	var event2deletet = models.Event{}
 
-	var events []models.Event
-
-	if err := db.Where("operator_refer=?", _username).Find(&events).Error; err != nil {
+	if err := db.Where("ID=?", eventID).First(&event2deletet).Error; err != nil {
 		fmt.Println("\t Error at finding event")
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	var safe = false
-	for _, v := range events {
-		fmt.Println(v.ID)
-		if v.ID == eventID {
-			safe = true
-			break
-		}
-	}
-
-	if !safe {
-		fmt.Println("\t Deletion Not Safe")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	fmt.Println("\t Event ID verified")
 
 	if err := db.Where("ID=?", eventID).Delete(&event2deletet).Error; err != nil {
 		fmt.Println("\t Error at deleting event")
@@ -141,16 +125,18 @@ func SDeleteEvent(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("\t Event Deleted")
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"ID": eventID,
-	})
-
-	if err := db.Where("event_refer=?", eventID).Delete(&models.Connection{}).Error; err != nil {
+	if err := db.Where("event_refer=?", eventID).Delete(&models.Connection{EventRefer: eventID}).Error; err != nil {
 		fmt.Println("\t Error at deleting connections")
 		fmt.Println(err)
 	}
 
+	fmt.Println("\t Connections Deleted")
+	fmt.Println("\t event deleted successfully")
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  200,
+		"eventID": eventID,
+	})
 }
 
 /* SGetEventList - GET

@@ -172,7 +172,7 @@ func SGenerateQR(w http.ResponseWriter, r *http.Request) {
 }
 
 func SDeleteTicket(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("ENDPOINT: QR generation")
+	fmt.Println("ENDPOINT: DELETE TICKET")
 	w.Header().Set("Content-Type", "application/json")
 	vars := r.URL.Query()
 	var tokenString = vars.Get("token")
@@ -182,7 +182,7 @@ func SDeleteTicket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _username != mux.Vars(r)["username"] {
+	if _username != mux.Vars(r)["opname"] {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
