@@ -1,5 +1,6 @@
-<<<<<<< HEAD
+
 # teventer
-=======
-"# eventer Application" 
->>>>>>> 99436d6 (init)
+
+
+# teventer is an app for better event managment
+
