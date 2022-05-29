@@ -1,0 +1,180 @@
+.tickets-all {
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff;
+    display: flex;
+    justify-content: center;
+    flex-direction: column; 
+}
+
+.tickets-header {
+    font-family: "Roboto Thin";
+}
+
+.container-upper {
+    height: 12%;
+    display: flex;
+    justify-content:space-evenly;
+    align-items: center;
+    background-color: #f1f1f1;
+}
+
+#ticketSearchInput {
+    width: 70%;
+    height: 5vh;
+    padding: 20px;
+    border-radius: 10px;
+    border-width: 0;
+    border: none;
+    font-size: 24px;
+    border: 0;
+    box-shadow: 0 0 15px 4px rgba(0, 0, 0, 0.06);
+    font-size: x-large;
+    font-family: "Poppins Black"
+}
+
+#ticketSearchInput :focus {
+    outline:none;
+}
+
+#ticketSearchButton {
+    width: 10%;
+    border-radius: 10px;
+    border: #2d3b55;
+    padding: 18px;
+    font-family: sans-serif;
+    cursor: pointer;
+    text-transform: uppercase;
+    background: #e8e9ec;
+    color: #777;
+    letter-spacing: 0.2px;
+    outline: 0;
+    transition: all 0.3s;
+}
+
+#ticketSearchButton:hover {
+    background: #c7c7c7;
+}
+
+.ticketSearchInput {
+    align-self: center;
+}
+
+.container-main {
+    min-height: 50vh;
+    max-height: 50vh;
+    overflow: scroll;
+    overflow-x: hidden;
+}
+
+.container-main::-webkit-scrollbar {
+    width: 10px;
+}
+
+.container-main::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.container-main::-webkit-scrollbar-thumb {
+    background-color: #1e88e5;
+    border-radius: 20px;
+    border: 1px solid #d3d3d3;
+}
+
+.ticket-container {
+    width: 100%;
+    height: 8vh;
+    padding: 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.ticket-data {
+    display: flex;
+    flex-direction: row;
+    width: 40%;
+    justify-content: space-between;
+}
+
+.ticket-name {
+    font-size: x-large;
+    font-family: "Poppins Thin";
+    margin-left: 20px;
+}
+.ticket-tab {
+    margin-right: 20px;
+    width: 75%;
+    align-items: center;
+    height: 85%;
+    display: flex;
+    border-radius: 5px;
+    background-color:#b8b8b8;
+    justify-content: space-between;
+    overflow: hidden;
+    font-family: "Poppins";
+}
+
+.ticket-devider {
+    height: 1vh;
+    height: 15%;
+    background-color: transparent
+}
+
+.ticket-buttonQR{
+    margin-right: 20px;
+    width: 30px;
+    height: 30px;
+    background-color:rgb(255, 255, 255);
+}
+
+.ticket-buttonQR :hover {
+    background-color: #e35869;
+}
+
+#create_button {
+    width: 20%;
+    border-radius: 10px;
+    border: #2d3b55;
+    padding: 18px;
+    font-family: sans-serif;
+    cursor: pointer;
+    text-transform: uppercase;
+    background: #e8e9ec;
+    color: #777;
+    margin-top: 0px;
+    margin: 0 5%;
+    letter-spacing: 0.2px;
+    outline: 0;
+    transition: all 0.3s;
+}
+
+#create_button:hover {
+    background-color: #bebebe;
+}
+
+.nav-menu {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: #f1f1f1;
+    height: 50px;
+}
+.nav-btn {
+    border-radius: 10px;
+    border: #2d3b55;
+    font-family: sans-serif;
+    cursor: pointer;
+    text-transform: uppercase;
+    margin: 0 1%;
+    outline: 0;
+    transition: all 0.3s;
+}
+
+.SEARCH_LOADER {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    width: 100%;
+    height: 100%;
+}

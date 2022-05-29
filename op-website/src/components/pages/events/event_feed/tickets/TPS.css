@@ -1,0 +1,57 @@
+
+
+
+#create_ticket {
+    width: 200px;
+    border-radius: 10px;
+    border: #2d3b55;
+    padding: 18px;
+
+    font-family: sans-serif;
+    cursor: pointer;
+    text-transform: uppercase;
+    background: #e8e9ec;
+    color: #777;
+    margin: 10px 5%;
+    letter-spacing: 0.2px;
+    outline: 0;
+    transition: all 0.3s;
+}
+
+#create_ticket:hover {
+    background-color:#bebebe ;
+}
+
+.ticket-tab-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-self: center;
+    width: 15%;
+    transition: 3s;
+}
+
+.ticket-del-button {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    border-color: black;
+}
+.ticket-buttonQR {
+    background-color: transparent;
+}
+.ticket-del-button :hover {
+    background-color: rgba(255, 0, 0, 0.5);
+        transition: all .3s;
+}
+.qrbutton {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    border-color: black;
+}
+
+.qrbutton :hover {
+    background-color: rgba(0, 217, 255, 0.5);
+    transition: all .3s;
+}

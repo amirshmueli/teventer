@@ -1,0 +1,28 @@
+.input-field-EC {
+    padding: 5px 10px;
+}
+
+.input-field-EC input {
+    font-size: 16px;
+    display: block;
+    font-family: sans-serif;
+    width: 100%;
+    color: #333;
+    padding: 10px 2px;
+    border: 0;
+    border-bottom: 1px solid #747474;
+    outline: none;
+    transition: all .3s;
+}
+.time {
+    margin-top: 20px;
+    width: 100%;
+}
+
+.time-inner {
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+}
